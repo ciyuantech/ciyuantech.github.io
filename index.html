@@ -1,0 +1,473 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>词源科技 | 大模型 API 服务</title>
+  <meta name="description" content="词源科技提供统一、稳定、面向生产环境的大模型 API 服务，一次接入主流 AI 模型。" />
+  <meta name="theme-color" content="#f7f9fc" />
+  <link rel="icon" type="image/png" href="./assets/ciyuan-logo.png?v=2" />
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f7f9fc;
+      --surface: rgba(255, 255, 255, .88);
+      --surface-strong: #ffffff;
+      --line: rgba(17, 46, 83, .11);
+      --line-bright: rgba(18, 125, 235, .28);
+      --text: #0d2038;
+      --muted: #617086;
+      --cyan: #008fd7;
+      --blue: #1769e0;
+      --violet: #6854d9;
+      --green: #159467;
+      --radius: 22px;
+      --shadow: 0 24px 70px rgba(35, 64, 105, .13);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      min-width: 320px;
+      overflow-x: hidden;
+      background:
+        radial-gradient(circle at 13% 0%, rgba(72, 165, 255, .18), transparent 31rem),
+        radial-gradient(circle at 86% 27%, rgba(105, 90, 235, .11), transparent 30rem),
+        var(--bg);
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: .72;
+      background-image:
+        linear-gradient(rgba(14,50,92,.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(14,50,92,.035) 1px, transparent 1px);
+      background-size: 54px 54px;
+      mask-image: linear-gradient(to bottom, black, transparent 74%);
+    }
+
+    a { color: inherit; text-decoration: none; }
+    button { font: inherit; }
+    .shell { width: min(1180px, calc(100% - 40px)); margin: 0 auto; }
+
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      border-bottom: 1px solid transparent;
+      background: rgba(255, 255, 255, .82);
+      backdrop-filter: blur(20px);
+      transition: border-color .25s ease;
+    }
+    .nav.scrolled { border-color: var(--line); }
+    .nav-inner { height: 78px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+    .brand {
+      display: inline-flex;
+      align-items: center;
+    }
+    .brand img { width: 166px; height: auto; display: block; }
+    .nav-links { display: flex; align-items: center; gap: 28px; color: #526278; font-size: 14px; }
+    .nav-links a:hover { color: var(--blue); }
+
+    .button {
+      min-height: 46px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      padding: 0 20px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--text);
+      font-size: 15px;
+      font-weight: 700;
+      transition: transform .2s ease, border-color .2s ease, background .2s ease;
+    }
+    .button:hover { transform: translateY(-2px); border-color: rgba(23,105,224,.32); }
+    .button.primary {
+      border-color: transparent;
+      color: #fff;
+      background: linear-gradient(120deg, #0a9bdd, #1769e0 54%, #6854d9);
+      box-shadow: 0 12px 32px rgba(23, 105, 224, .22);
+    }
+    .button.ghost { background: rgba(255,255,255,.72); }
+    .arrow { font-size: 18px; line-height: 1; }
+
+    .hero {
+      position: relative;
+      min-height: 650px;
+      display: grid;
+      grid-template-columns: 1fr;
+      align-items: center;
+      padding: 106px 0 98px;
+    }
+    .hero::after {
+      content: "";
+      position: absolute;
+      width: 520px;
+      height: 520px;
+      right: -40px;
+      top: 54px;
+      border-radius: 50%;
+      background: repeating-radial-gradient(circle, transparent 0 35px, rgba(45, 135, 230, .1) 36px 37px);
+      filter: perspective(380px) rotateX(66deg) rotateZ(-8deg);
+      pointer-events: none;
+    }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 7px 12px;
+      border: 1px solid var(--line-bright);
+      border-radius: 999px;
+      background: rgba(29, 142, 216, .08);
+      color: #116da6;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .08em;
+    }
+    .eyebrow::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 16px var(--cyan); }
+    .hero-copy { position: relative; z-index: 2; min-width: 0; max-width: 920px; }
+    h1 {
+      max-width: 680px;
+      margin: 24px 0 22px;
+      font-size: clamp(46px, 6.2vw, 82px);
+      line-height: 1.03;
+      letter-spacing: -.045em;
+    }
+    h1 .gradient {
+      color: transparent;
+      background: linear-gradient(100deg, #10243f 4%, #0f81c9 48%, #6351d5 92%);
+      background-clip: text;
+      -webkit-background-clip: text;
+    }
+    .hero-copy > p { max-width: 720px; margin: 0; color: var(--muted); font-size: 18px; line-height: 1.8; }
+    .hero-copy > .hero-promo {
+      width: fit-content;
+      max-width: 100%;
+      margin-top: 20px;
+      padding: 9px 14px;
+      border-inline-start: 3px solid var(--blue);
+      border-radius: 0 10px 10px 0;
+      background: rgba(255, 255, 255, .8);
+      color: var(--text);
+      font-size: 1rem;
+      line-height: 1.55;
+    }
+    .hero-promo strong { color: #124eaa; }
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 34px; }
+    .trust-row { display: flex; flex-wrap: wrap; gap: 22px; margin-top: 34px; color: #4f6178; font-size: 14px; }
+    .trust-row span { display: inline-flex; align-items: center; gap: 8px; }
+    .trust-row i { width: 18px; height: 18px; display: grid; place-items: center; border-radius: 50%; background: rgba(102, 230, 177, .12); color: var(--green); font-style: normal; font-size: 12px; }
+
+    section { position: relative; padding: 104px 0; }
+    .section-kicker { color: var(--cyan); font-size: 13px; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; }
+    .section-title { max-width: 760px; margin: 14px 0 16px; font-size: clamp(34px, 4.5vw, 54px); line-height: 1.14; letter-spacing: -.035em; }
+    .section-lead { max-width: 680px; margin: 0; color: var(--muted); font-size: 17px; line-height: 1.75; }
+
+    .models { border-top: 1px solid var(--line); }
+    .model-marquee { display: flex; gap: 14px; overflow: hidden; margin: 54px 0 20px; mask-image: linear-gradient(90deg, transparent, black 8%, black 92%, transparent); }
+    .model-track { display: flex; gap: 14px; width: max-content; animation: ticker 30s linear infinite; }
+    .provider-chip { min-width: 168px; height: 62px; display: flex; align-items: center; gap: 12px; padding: 0 16px; border: 1px solid var(--line); border-radius: 16px; background: rgba(255,255,255,.9); color: #22354f; box-shadow: 0 8px 24px rgba(33,71,112,.055); }
+    .provider-chip img, .model-logo img { width: 30px; height: 30px; object-fit: contain; }
+    .provider-chip strong { font-size: 14px; }
+    @keyframes ticker { to { transform: translateX(calc(-50% - 7px)); } }
+
+    .model-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 22px; }
+    .model-card {
+      min-height: 176px;
+      position: relative;
+      padding: 20px;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      background: rgba(255,255,255,.9);
+      box-shadow: 0 12px 34px rgba(33,71,112,.055);
+      overflow: hidden;
+      transition: transform .22s ease, border-color .22s ease, background .22s ease;
+    }
+    .model-card:hover { transform: translateY(-5px); border-color: rgba(23,105,224,.3); background: #fff; box-shadow: 0 20px 42px rgba(33,71,112,.11); }
+    .model-card::after { content: ""; position: absolute; width: 100px; height: 100px; right: -40px; bottom: -50px; border-radius: 50%; background: var(--glow, rgba(43, 177, 255, .18)); filter: blur(18px); }
+    .model-logo { display: flex; align-items: center; gap: 11px; }
+    .model-logo span:last-child { color: #718199; font-size: 12px; }
+    .model-card h3 { margin: 22px 0 13px; font-size: 18px; letter-spacing: -.02em; }
+    .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+    .tag { padding: 5px 8px; border-radius: 999px; background: #f0f4f9; color: #65758c; font-size: 11px; }
+
+    .features { overflow: hidden; }
+    .feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 48px; }
+    .feature {
+      position: relative;
+      min-height: 274px;
+      padding: 28px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(255,255,255,.82);
+      box-shadow: 0 14px 36px rgba(33,71,112,.045);
+    }
+    .feature:first-child { grid-column: span 2; background: linear-gradient(135deg, #edf8ff, #f8f7ff); }
+    .feature-routing { display: grid; grid-template-columns: minmax(0, 1fr) minmax(390px, .9fr); align-items: center; gap: 54px; min-height: 330px; padding: 38px; }
+    .feature-copy { min-width: 0; }
+    .feature-icon { width: 46px; height: 46px; display: grid; place-items: center; border: 1px solid rgba(67, 205, 255, .3); border-radius: 14px; background: rgba(36, 161, 222, .1); color: var(--cyan); }
+    .feature-icon svg { width: 23px; height: 23px; fill: none; stroke: currentColor; stroke-width: 1.7; }
+    .feature h3 { margin: 28px 0 11px; font-size: 22px; }
+    .feature p { margin: 0; color: var(--muted); line-height: 1.75; }
+    .route-map { position: relative; width: 100%; height: 190px; }
+    .route-lines { position: absolute; inset: 17px 40px; width: calc(100% - 80px); height: calc(100% - 34px); overflow: visible; }
+    .route-lines path { fill: none; stroke: rgba(44, 151, 224, .34); stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+    .route-map .node { position: absolute; z-index: 2; width: 92px; height: 42px; display: grid; place-items: center; border: 1px solid rgba(24, 125, 210, .2); border-radius: 12px; background: #fff; color: #53667e; font-size: 13px; box-shadow: 0 7px 20px rgba(33,71,112,.07); }
+    .route-map .hub { left: calc(50% - 50px); top: 74px; width: 100px; border-color: var(--cyan); color: var(--blue); font-weight: 700; box-shadow: 0 0 34px rgba(25, 136, 210, .12); }
+    .route-map .n1 { left: 0; top: 0; }.route-map .n2 { right: 0; top: 0; }.route-map .n3 { left: 0; bottom: 0; }.route-map .n4 { right: 0; bottom: 0; }
+
+    .steps { border-top: 1px solid var(--line); }
+    .step-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; margin-top: 52px; counter-reset: step; }
+    .step { position: relative; min-height: 190px; padding: 26px 32px 26px 0; border-top: 1px solid var(--line); counter-increment: step; }
+    .step:not(:last-child)::after { content: ""; position: absolute; right: 26px; top: 38px; width: 70px; height: 1px; background: linear-gradient(90deg, var(--line-bright), transparent); }
+    .step::before { content: "0" counter(step); display: block; color: var(--cyan); font-size: 12px; font-weight: 800; letter-spacing: .1em; }
+    .step h3 { margin: 24px 0 10px; font-size: 20px; }
+    .step p { margin: 0; color: var(--muted); line-height: 1.7; }
+
+    .contact { padding: 70px 0 40px; }
+    .contact-panel {
+      position: relative;
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 32px;
+      padding: 58px;
+      border: 1px solid rgba(84, 195, 255, .3);
+      border-radius: 30px;
+      background: linear-gradient(130deg, #eef8ff, #f7fbff 50%, #f2efff);
+      box-shadow: var(--shadow);
+    }
+    .contact-panel::after { content: ""; position: absolute; width: 320px; height: 320px; right: -120px; top: -170px; border-radius: 50%; border: 52px solid rgba(88, 219, 255, .07); }
+    .contact h2 { margin: 0 0 12px; font-size: clamp(32px, 4vw, 50px); letter-spacing: -.035em; }
+    .contact p { margin: 0; color: #617086; font-size: 17px; line-height: 1.7; }
+    .contact .button { position: relative; z-index: 2; min-width: 190px; }
+
+    footer { padding: 42px 0 54px; color: #728197; font-size: 13px; }
+    .footer-inner { display: flex; align-items: center; justify-content: space-between; gap: 24px; border-top: 1px solid var(--line); padding-top: 30px; }
+    .footer-brand { display: flex; align-items: center; gap: 16px; }
+    .footer-brand img { width: 158px; }
+    footer a:hover { color: var(--blue); }
+
+    .reveal { opacity: 0; transform: translateY(18px); transition: opacity .6s ease, transform .6s ease; }
+    .reveal.visible { opacity: 1; transform: none; }
+
+    @media (max-width: 980px) {
+      .nav-links a:not(.button) { display: none; }
+      .hero::after { right: -260px; }
+      .model-grid { grid-template-columns: repeat(2, 1fr); }
+      .feature-grid { grid-template-columns: 1fr 1fr; }
+      .feature:first-child { grid-column: span 2; }
+      .step-grid { grid-template-columns: 1fr; }
+      .step:not(:last-child)::after { display: none; }
+    }
+    @media (max-width: 650px) {
+      .shell { width: min(100% - 28px, 1180px); }
+      .nav-inner { height: 68px; }
+      .brand img { width: 138px; }
+      .nav .button { min-height: 40px; padding: 0 14px; font-size: 13px; }
+      .hero { min-height: auto; padding: 56px 0 62px; }
+      h1 { max-width: 100%; font-size: clamp(40px, 12.5vw, 50px); letter-spacing: -.055em; }
+      .hero-copy > p, .section-lead { font-size: 16px; }
+      section { padding: 76px 0; }
+      .model-grid, .feature-grid { grid-template-columns: 1fr; }
+      .feature:first-child { grid-column: auto; }
+      .feature-routing { grid-template-columns: 1fr; gap: 32px; padding: 28px; }
+      .route-map { width: 100%; margin-top: 4px; }
+      .contact-panel { grid-template-columns: 1fr; padding: 36px 24px; }
+      .contact .button { width: 100%; }
+      .footer-inner { align-items: flex-start; flex-direction: column; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { animation: none !important; transition: none !important; }
+      .reveal { opacity: 1; transform: none; }
+    }
+  </style>
+</head>
+<body>
+  <nav class="nav" aria-label="主导航">
+    <div class="shell nav-inner">
+      <a class="brand" href="#top" aria-label="词源科技首页"><img src="./assets/ciyuan-logo.png?v=2" alt="词源科技" /></a>
+      <div class="nav-links">
+        <a href="#models">模型</a>
+        <a href="#capabilities">能力</a>
+        <a href="#integration">接入</a>
+        <a class="button ghost" href="mailto:ciyuantech@yeah.net">联系销售</a>
+      </div>
+    </div>
+  </nav>
+
+  <main id="top">
+    <div class="shell hero">
+      <div class="hero-copy">
+        <span class="eyebrow">ENTERPRISE AI INFRASTRUCTURE</span>
+        <h1>一个接口，连接<br><span class="gradient">世界主流大模型</span></h1>
+        <p>词源科技提供统一、稳定的大模型 API 服务。无需维护多套 SDK，即可灵活调用领先的文本、推理、编程与多模态模型。</p>
+        <p class="hero-promo"><strong>首创 Token 信用卡模式</strong>，先试用，再支付。</p>
+        <div class="hero-actions">
+          <a class="button primary" href="mailto:ciyuantech@yeah.net?subject=咨询词源科技大模型API服务">联系销售 <span class="arrow">↗</span></a>
+          <a class="button ghost" href="#models">查看支持模型 <span class="arrow">↓</span></a>
+        </div>
+        <div class="trust-row" aria-label="服务特点">
+          <span><i>✓</i>统一兼容接口</span>
+          <span><i>✓</i>灵活模型路由</span>
+          <span><i>✓</i>面向生产环境</span>
+        </div>
+      </div>
+
+    </div>
+
+    <section class="models" id="models">
+      <div class="shell">
+        <div class="reveal">
+          <div class="section-kicker">MODEL NETWORK</div>
+          <h2 class="section-title">覆盖主流模型，按任务自由选择</h2>
+          <p class="section-lead">从通用推理、代码生成到高性价比批量任务，通过同一套调用方式组合最适合业务的模型能力。</p>
+        </div>
+
+        <div class="model-marquee" aria-label="支持的模型提供商">
+          <div class="model-track" id="providerTrack"></div>
+        </div>
+
+        <div class="model-grid" id="modelGrid"></div>
+      </div>
+    </section>
+
+    <section class="features" id="capabilities">
+      <div class="shell">
+        <div class="reveal">
+          <div class="section-kicker">ONE API LAYER</div>
+          <h2 class="section-title">把多模型能力，变成一套可靠的基础设施</h2>
+        </div>
+        <div class="feature-grid">
+          <article class="feature feature-routing reveal">
+            <div class="feature-copy">
+              <div class="feature-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 7h6M14 7h6M7 4v6M17 4v6M4 17h6M14 17h6M7 14v6M17 14v6"/></svg></div>
+              <h3>统一 API 与智能路由</h3>
+              <p>使用一致的请求结构调用不同厂商模型，减少重复开发，让模型切换、降级与组合更灵活。</p>
+            </div>
+            <div class="route-map" aria-hidden="true">
+              <svg class="route-lines" viewBox="0 0 400 156" preserveAspectRatio="none"><path d="M0 0 200 78 400 0M0 156 200 78 400 156"/></svg>
+              <span class="node n1">GPT</span><span class="node n2">Claude</span><span class="node hub">词源 API</span><span class="node n3">Gemini</span><span class="node n4">DeepSeek</span>
+            </div>
+          </article>
+          <article class="feature reveal">
+            <div class="feature-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3 4 7v5c0 4.5 3.1 7.4 8 9 4.9-1.6 8-4.5 8-9V7l-8-4Z"/><path d="m9 12 2 2 4-4"/></svg></div>
+            <h3>稳定与安全</h3>
+            <p>面向业务系统的稳定接入层，支持密钥隔离、调用控制与异常切换。</p>
+          </article>
+          <article class="feature reveal">
+            <div class="feature-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5h16v14H4z"/><path d="m8 10 2 2-2 2M13 15h3"/></svg></div>
+            <h3>开发者友好</h3>
+            <p>兼容常用调用格式，迁移成本低，适合现有应用快速接入。</p>
+          </article>
+          <article class="feature reveal">
+            <div class="feature-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 18V8M10 18V4M16 18v-7M22 18H2"/></svg></div>
+            <h3>清晰用量</h3>
+            <p>按调用维度查看使用情况，为成本分析、额度规划和团队协作提供依据。</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="steps" id="integration">
+      <div class="shell">
+        <div class="reveal">
+          <div class="section-kicker">GET CONNECTED</div>
+          <h2 class="section-title">从需求到调用，只需三步</h2>
+        </div>
+        <div class="step-grid">
+          <article class="step reveal"><h3>沟通使用场景</h3><p>说明模型类型、预计调用量与业务要求，我们协助确定适合的接入方案。</p></article>
+          <article class="step reveal"><h3>获取接入信息</h3><p>获得 API 密钥与调用说明，使用兼容格式快速完成现有系统适配。</p></article>
+          <article class="step reveal"><h3>上线持续使用</h3><p>根据实际负载调整模型组合与额度，让服务平稳支撑业务增长。</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="contact" id="contact">
+      <div class="shell">
+        <div class="contact-panel reveal">
+          <div>
+            <h2>准备接入大模型 API？</h2>
+            <p>告诉我们你的使用场景、模型需求和预计用量，获取适合的服务方案。</p>
+          </div>
+          <a class="button primary" href="mailto:ciyuantech@yeah.net?subject=咨询词源科技大模型API服务">Contact Sales <span class="arrow">↗</span></a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="shell footer-inner">
+      <div class="footer-brand"><img src="./assets/ciyuan-logo.png?v=2" alt="词源科技" /><span>大模型 API 服务</span></div>
+      <a href="mailto:ciyuantech@yeah.net">ciyuantech@yeah.net</a>
+      <span>© 2026 词源科技</span>
+    </div>
+  </footer>
+
+  <script>
+    const providers = [
+      ['OpenAI','./assets/providers/OpenAI-black-monoblossom.png'],
+      ['Anthropic','./assets/providers/anthropic.png'],
+      ['Google Gemini','./assets/providers/gemini.png'],
+      ['DeepSeek','./assets/providers/deepseek.png'],
+      ['xAI','./assets/providers/xai.png'],
+      ['Meta','./assets/providers/meta.png'],
+      ['Qwen','./assets/providers/qwen.png'],
+      ['Xiaomi MiMo','./assets/providers/xiaomi-mimo.png'],
+      ['Kimi','./assets/providers/kimi.png'],
+      ['MiniMax','./assets/providers/minimax.png'],
+      ['智谱 AI','./assets/providers/zhipu.png']
+    ];
+
+    const models = [
+      {provider:'OpenAI', name:'GPT-5.5', logo:'./assets/providers/OpenAI-black-monoblossom.png', tags:['通用推理','工具调用'], glow:'rgba(73, 214, 171, .14)'},
+      {provider:'Anthropic', name:'Claude Opus 5', logo:'./assets/providers/anthropic.png', tags:['复杂任务','长文本'], glow:'rgba(219, 137, 98, .14)'},
+      {provider:'Google', name:'Gemini 3 Pro', logo:'./assets/providers/gemini.png', tags:['多模态','长上下文'], glow:'rgba(74, 133, 255, .15)'},
+      {provider:'DeepSeek', name:'DeepSeek V3.2', logo:'./assets/providers/deepseek.png', tags:['中文','高性价比'], glow:'rgba(61, 116, 255, .15)'},
+      {provider:'OpenAI', name:'GPT-5.3 Codex', logo:'./assets/providers/OpenAI-black-monoblossom.png', tags:['代码生成','Agent'], glow:'rgba(73, 214, 171, .14)'},
+      {provider:'xAI', name:'Grok 4.5', logo:'./assets/providers/xai.png', tags:['推理','实时任务'], glow:'rgba(120, 138, 164, .12)'},
+      {provider:'Meta', name:'Llama 4', logo:'./assets/providers/meta.png', tags:['开放模型','通用'], glow:'rgba(51, 137, 255, .14)'},
+      {provider:'Alibaba', name:'Qwen 3', logo:'./assets/providers/qwen.png', tags:['中文','企业场景'], glow:'rgba(131, 84, 255, .15)'},
+      {provider:'Xiaomi', name:'MiMo V2', logo:'./assets/providers/xiaomi-mimo.png', tags:['高性价比','推理'], glow:'rgba(255, 116, 49, .14)'},
+      {provider:'Moonshot', name:'Kimi K2', logo:'./assets/providers/kimi.png', tags:['长文本','Agent'], glow:'rgba(126, 95, 255, .14)'},
+      {provider:'Zhipu AI', name:'GLM-5', logo:'./assets/providers/zhipu.png', tags:['中文','多模态'], glow:'rgba(48, 181, 255, .14)'},
+      {provider:'MiniMax', name:'MiniMax M2', logo:'./assets/providers/minimax.png', tags:['文本','低延迟'], glow:'rgba(242, 78, 158, .12)'}
+    ];
+
+    const track = document.querySelector('#providerTrack');
+    [...providers, ...providers].forEach(([name, logo]) => {
+      track.insertAdjacentHTML('beforeend', `<div class="provider-chip"><img src="${logo}" alt="${name} 官方标识"><strong>${name}</strong></div>`);
+    });
+
+    const grid = document.querySelector('#modelGrid');
+    models.forEach((model, index) => {
+      grid.insertAdjacentHTML('beforeend', `
+        <article class="model-card reveal" style="--glow:${model.glow}; transition-delay:${Math.min(index % 4, 3) * 55}ms">
+          <div class="model-logo">
+            <img src="${model.logo}" alt="${model.provider} 官方标识">
+            <span>${model.provider}</span>
+          </div>
+          <h3>${model.name}</h3>
+          <div class="tags">${model.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}</div>
+        </article>`);
+    });
+
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('visible'); });
+    }, {threshold: .12});
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+    window.addEventListener('scroll', () => document.querySelector('.nav').classList.toggle('scrolled', window.scrollY > 10), {passive:true});
+  </script>
+</body>
+</html>
